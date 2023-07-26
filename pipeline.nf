@@ -1,52 +1,82 @@
 
 // Pipeline input parameters
+// params.contigs = "$HOME/Databases/Wright_Culture_Collection/assemblies_by_pathogen/Providencia_stuartii/*.fasta"
+params.contigs = '/home/emil/Databases/Wright_Culture_Collection/assemblies_by_pathogen/Citrobacter_youngae/*'
+params.mobDB = "$projectDir/databases"
+contig_ch = Channel
+               .fromPath(params.contigs)
+               .map { file -> tuple(file.baseName, file) }
 
-params.contigs = "$HOME/Databases/Wright_Culture_Collection/assemblies_by_pathogen/Providencia_stuartii/*.fasta"
-params.mobDB = "$HOME"
-contig_ch = Channel.fromPath(params.contigs)
+// Log
+log.info """\
+    Mob-Suite RGI pipeline
+    ===================================
+    contigs    : ${params.contigs}
+    mobDB      : ${params.mobDB}
+    Profile    : ${workflow.profile}
+    """
+    .stripIndent(true)
 
 
+process just_test {
 
+   input:
+   tuple val(sample), path(contigs)
+
+   output:
+   stdout
+
+   script:
+   """
+   echo $sample 
+   echo $contigs
+
+   """
+
+}
 
 process run_mobSuite {
 
-conda 'bioconda::mob_suite'
+   input: 
+   tuple val(sample), path(contigs)
 
-input: 
-path contigs
+   output: 
+   tuple val(sample), path('results',  type: 'dir')
 
-output: 
-stdout
+   script:
+   """
 
-script:
-"""
-grep -c "^>" $contigs
+   mob_recon \
+      --infile $contigs \
+      --outdir results \
+      --num_threads 1 \
+      --database_directory $params.mobDB
 
-"""
+   """
 }
+
 
 process run_RGI {
 
-conda 'bioconda::rgi'
+   conda 'bioconda::rgi'
 
-script: 
-"""
+   script: 
+   """
 
-echo 'Test'
+   echo 'Test'
 
 
-"""
-
-}
-
-workflow {
-
-   println "$params.contigs"
-   seqs_ch = run_mobSuite(contig_ch)
-   seqs_ch.view()
-   run_RGI()
+   """
 
 }
+
+ workflow {
+    
+    out = run_mobSuite(contig_ch)
+    out.view()
+ 
+ }
+
 
 
 
