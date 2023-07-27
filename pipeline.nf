@@ -26,7 +26,14 @@ process run_mobSuite {
    tuple val(sample), path(contigs)
 
    output: 
-   tuple val(sample), path('mobSuite',  type: 'dir')
+   tuple val(sample), path("mobSuite/contig_report.txt"), 
+      emit: contig
+   tuple val(sample), path("mobSuite/*.fasta"), 
+      emit: fastas
+   tuple val(sample), path("mobSuite/mobtyper_results.txt"), 
+      emit: typer
+   tuple val(sample), path("mobSuite/mge.report.txt"), 
+      emit: mge
 
    script:
    """
@@ -67,7 +74,8 @@ process run_RGI {
    tuple val(sample), path(contigs)
 
    output:
-   tuple val(sample), path("rgi_results.*")
+   tuple val(sample), path("rgi_results.txt"), emit: table
+   tuple val(sample), path("rgi_results.json"), emit: json
 
    script: 
    """
@@ -79,13 +87,20 @@ process run_RGI {
     """ }
 
  workflow {
-  
+ 
+   // Run RGI
    load_RGI_database(card_json_ch)
-   rgi_ch = run_RGI(contig_ch)
-   mob_ch = run_mobSuite(contig_ch)
+   rgi = run_RGI(contig_ch)
+   rgi.table.view()
+   rgi.json.view()
 
-   rgi_ch.view()
-   mob_ch.view()
+
+   // Run MobTyper
+   mob = run_mobSuite(contig_ch)
+   mob.contig.view()
+   mob.fastas.view()
+   mob.typer.view() 
+   mob.mge.view()
 
 
      
