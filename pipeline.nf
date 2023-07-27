@@ -1,11 +1,14 @@
 
 // Pipeline input parameters
 // params.contigs = "$HOME/Databases/Wright_Culture_Collection/assemblies_by_pathogen/Providencia_stuartii/*.fasta"
-params.contigs = '/home/emil/Databases/Wright_Culture_Collection/assemblies_by_pathogen/Citrobacter_youngae/*'
+params.contigs = ""
 params.mobDB = "$projectDir/databases"
+params.card_json = ""
 contig_ch = Channel
                .fromPath(params.contigs)
                .map { file -> tuple(file.baseName, file) }
+card_json_ch = Channel.fromPath(params.card_json)
+
 
 // Log
 log.info """\
@@ -16,24 +19,6 @@ log.info """\
     Profile    : ${workflow.profile}
     """
     .stripIndent(true)
-
-
-process just_test {
-
-   input:
-   tuple val(sample), path(contigs)
-
-   output:
-   stdout
-
-   script:
-   """
-   echo $sample 
-   echo $contigs
-
-   """
-
-}
 
 process run_mobSuite {
 
@@ -55,25 +40,52 @@ process run_mobSuite {
    """
 }
 
+process load_RGI_database { 
+    label "RGI"
 
-process run_RGI {
+    input: 
+    path(card_json)
 
-   conda 'bioconda::rgi'
+    output:
+    stdout
 
-   script: 
-   """
+    script:
+    """
 
-   echo 'Test'
+    rgi load --card_json $card_json 
 
 
-   """
+    """
 
 }
 
+process run_RGI {
+    label "RGI"
+
+    input:
+    tuple val(sample), path(contigs)
+
+    output:
+    tuple val(sample), path("rgi_results.*")
+
+    script: 
+    """
+
+    rgi main \
+        --input_sequence $contigs \
+        --output_file "rgi_results"
+   
+    """
+}
+
  workflow {
-    
-    out = run_mobSuite(contig_ch)
-    out.view()
+  
+    load_RGI_database(card_json_ch)
+    rgi_ch = run_RGI(contig_ch)
+    mob_ch = run_mobSuite(contig_ch)
+
+    rgi_ch.view()
+    mob_ch.view()
  
  }
 
