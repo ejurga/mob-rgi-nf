@@ -1,4 +1,3 @@
-
 // Pipeline input parameters
 params.contigs = ""
 params.mobDB = "$projectDir/databases"
@@ -19,6 +18,8 @@ log.info """\
    """
    .stripIndent(true)
 
+// Note: what happens if these files are not generated?, e.g., with 
+// optional flag?
 process run_mobSuite {
    publishDir "./results/$sample"
 
@@ -84,25 +85,46 @@ process run_RGI {
       --input_sequence $contigs \
       --output_file "rgi_results"
    
-    """ }
+    """ 
+}
 
- workflow {
+process merge_tables {
+    label "RGI"
+    publishDir "./results/$sample/Merge"
+
+    input:
+    tuple val(sample), path(tables)
+
+    output: 
+    path('merged_tables.csv'), emit: out
+
+    script: 
+    """
+    python $projectDir/bin/merge.py ${tables[0]} ${tables[1]}
+
+    """
+
+}
+
+
+workflow {
  
-   // Run RGI
-   load_RGI_database(card_json_ch)
-   rgi = run_RGI(contig_ch)
-   rgi.table.view()
-   rgi.json.view()
+    // Run RGI
+    load_RGI_database(card_json_ch)
+    rgi = run_RGI(contig_ch)
 
 
-   // Run MobTyper
-   mob = run_mobSuite(contig_ch)
-   mob.contig.view()
-   mob.fastas.view()
-   mob.typer.view() 
-   mob.mge.view()
+    // Run MobTyper
+    mob = run_mobSuite(contig_ch)
 
+    // Create channel with tables to be combined
+    list_ch = rgi.table
+                .concat(mob.contig)
+                .groupTuple(size: 2)
 
+    // Merge the tables using an included script
+    merge_tables(list_ch)
+        
      
  }
 
