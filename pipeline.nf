@@ -93,6 +93,7 @@ process run_RGI {
 process merge_tables {
    label "RGI"
    publishDir "${params.outDir}/$sample/Merge"
+   cache false
 
    input:
    tuple val(sample), path(tables)
@@ -135,7 +136,6 @@ workflow {
          name: 'All_samples.csv', 
          storeDir: params.outDir )
       .view()
-
      
  }
 
