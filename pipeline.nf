@@ -32,9 +32,9 @@ process run_mobSuite {
    tuple val(sample), path("mobSuite/*.fasta"), 
       emit: fastas
    tuple val(sample), path("mobSuite/mobtyper_results.txt"), 
-      emit: typer
+      emit: typer, optional: true
    tuple val(sample), path("mobSuite/mge.report.txt"), 
-      emit: mge
+      emit: mge, optional: true
 
    script:
    """
