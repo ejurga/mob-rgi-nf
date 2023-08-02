@@ -2,6 +2,7 @@
 params.contigs = ""
 params.mobDB = "$projectDir/databases"
 params.card_json = ""
+params.outDir = "./results"
 contig_ch = Channel
                .fromPath(params.contigs)
                .map { file -> tuple(file.baseName, file) }
@@ -12,16 +13,17 @@ card_json_ch = Channel.fromPath(params.card_json)
 log.info """\
    Mob-Suite RGI pipeline
    ===================================
-   contigs    : ${params.contigs}
-   mobDB      : ${params.mobDB}
-   Profile    : ${workflow.profile}
+   contigs     : ${params.contigs}
+   mobDB       : ${params.mobDB}
+   Profile     : ${workflow.profile}
+   outDir      : ${params.outDir}
    """
    .stripIndent(true)
 
 // Note: what happens if these files are not generated?, e.g., with 
 // optional flag?
 process run_mobSuite {
-   publishDir "./results/$sample"
+   publishDir "${params.outDir}/$sample"
 
    input: 
    tuple val(sample), path(contigs)
@@ -69,7 +71,7 @@ process load_RGI_database {
 
 process run_RGI { 
    label "RGI"
-   publishDir "./results/$sample/RGI"
+   publishDir "${params.outDir}/$sample/RGI"
 
    input:
    tuple val(sample), path(contigs)
@@ -90,7 +92,7 @@ process run_RGI {
 
 process merge_tables {
    label "RGI"
-   publishDir "./results/$sample/Merge"
+   publishDir "${params.outDir}/$sample/Merge"
 
    input:
    tuple val(sample), path(tables)
@@ -124,14 +126,14 @@ workflow {
    // Merge the tables using an included script
    merge_ch = merge_tables(list_ch)
 
-   // This operation concatenates the CSV files, while only maintaining a 
-   // single header.
+   // This operation concatenates the CSV files, but leaves just one header at 
+   // the top 
    merge_ch.out
       .collectFile(
          keepHeader: true, 
          skip: 1, 
          name: 'All_samples.csv', 
-         storeDir: 'results')
+         storeDir: params.outDir )
       .view()
 
      
