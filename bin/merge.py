@@ -28,13 +28,14 @@ rgi_df['Contig'] = new_contig
 mob_df.rename(columns={'contig_id': 'Contig'}, inplace=True)
 
 # Merge the results by performing a left join. RGI results appear first in the
-# final table. There should be no duplication of Contigs, so we set the
-# one_to_one validation method.
+# final table. There should be no duplication of Contigs in the mobDB, but
+# there may be many ORFs per contig in the RGI results, so we set the
+# many_to_one validation method.
 merged_df = pd.merge(left=rgi_df, 
                      right=mob_df, 
                      on='Contig', 
                      how='left', 
-                     validate='one_to_one')
+                     validate='many_to_one')
 
 # Output a file
 merged_df.to_csv(path_or_buf='merged_tables.csv', 
