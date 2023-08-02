@@ -89,42 +89,51 @@ process run_RGI {
 }
 
 process merge_tables {
-    label "RGI"
-    publishDir "./results/$sample/Merge"
+   label "RGI"
+   publishDir "./results/$sample/Merge"
 
-    input:
-    tuple val(sample), path(tables)
+   input:
+   tuple val(sample), path(tables)
 
-    output: 
-    path('merged_tables.csv'), emit: out
+   output:
+   path('merged_tables.csv'), emit: out
 
-    script: 
-    """
-    python $projectDir/bin/merge.py ${tables[0]} ${tables[1]}
+   script: 
+   """
+   python $projectDir/bin/merge.py ${tables[0]} ${tables[1]}
 
-    """
+   """
 
 }
 
-
 workflow {
- 
-    // Run RGI
-    load_RGI_database(card_json_ch)
-    rgi = run_RGI(contig_ch)
+
+   // Run RGI
+   load_RGI_database(card_json_ch)
+   rgi = run_RGI(contig_ch)
 
 
-    // Run MobTyper
-    mob = run_mobSuite(contig_ch)
+   // Run MobTyper
+   mob = run_mobSuite(contig_ch)
 
-    // Create channel with tables to be combined
-    list_ch = rgi.table
+   // Create channel with tables to be combined
+   list_ch = rgi.table
                 .concat(mob.contig)
                 .groupTuple(size: 2)
 
-    // Merge the tables using an included script
-    merge_tables(list_ch)
-        
+   // Merge the tables using an included script
+   merge_ch = merge_tables(list_ch)
+
+   // This operation concatenates the CSV files, while only maintaining a 
+   // single header.
+   merge_ch.out
+      .collectFile(
+         keepHeader: true, 
+         skip: 1, 
+         name: 'All_samples.csv', 
+         storeDir: 'results')
+      .view()
+
      
  }
 
