@@ -176,7 +176,7 @@ workflow {
 
     // Download CARD database if specified on the command line.
     if ( params.download_card_json ==~ '[Yy][Ee]{0,1}[Ss]{0,1}' ){
-    
+   
         JSON = download_CARD_json()
     
     } else if ( params.download_card_json ==~ '[Nn][Oo]{0,1}' && 
