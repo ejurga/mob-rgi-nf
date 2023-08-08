@@ -230,20 +230,3 @@ workflow {
          storeDir: params.outDir )
  }
 
-/*
-
-Some random thoughts on Friday, so yo u don't forget
-
-For load_RGI_database, we either need to publish the folder to the working 
-directory, or we need to set it to --local, and ln -s the database to each 
-instance. You could make the localDB a dependancy, which solves the flagging 
-problem
-
-Avoid pipes for now. 
-
-
-
-
-
-
-*/
