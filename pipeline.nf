@@ -77,7 +77,6 @@ process run_mobSuite {
 
     input: 
     tuple val(sample), path(contigs)
-    path DB
 
     output: 
     tuple val(sample), path("mobSuite/contig_report.txt"), 
@@ -96,7 +95,7 @@ process run_mobSuite {
       --infile $contigs \
       --outdir mobSuite \
       --num_threads 1 \
-      --database_directory $DB
+      --database_directory $params.mobDB
 
     """
     stub: 
@@ -137,14 +136,10 @@ workflow {
     // Load RGI database locally.
     LOCAL_DB = load_RGI_database(JSON)
     // Run RGI
-    RGI_RESULTS = run_RGI(CONTIGS, LOCAL_DB.out)
-    RGI_RESULTS.table.view()
+    RGI_RESULTS = run_RGI(CONTIGS, LOCAL_DB.out.collect())
 
-
-    // Get the MOB datbase path.     
-    MOB_DB = Channel.fromPath(params.mobDB)
-    // Run mob_recon on the contigs using the database.
-    MOB_RESULTS = run_mobSuite(CONTIGS, MOB_DB)
+    // Run mob_recon on the contigs.
+    MOB_RESULTS = run_mobSuite(CONTIGS)
 
     // Create channel with tables to be combined
     TABLES = RGI_RESULTS.table 
