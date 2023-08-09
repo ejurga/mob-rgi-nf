@@ -23,9 +23,6 @@ log.info """\
 // Note: what happens if these files are not generated?, e.g., with
 // optional flag?
 
-
-
-
 process load_RGI_database { 
     label "RGI"
 
@@ -134,8 +131,6 @@ workflow {
     CONTIGS = Channel
                 .fromPath(params.contigs)
                 .map { file -> tuple(file.baseName, file) }
-  
-
     
     // Get the CARD Json
     JSON = Channel.fromPath(params.card_json)
