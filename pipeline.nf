@@ -1,10 +1,11 @@
 // Pipeline input parameters
 params.contigs = ""
-// Database parameters
-params.mobDB = "./mobDB"
-params.download_mobDB = "no"
-params.card_json = "./card.json"
-params.download_card_json = "no"
+
+// Database Locations
+params.mobDB = "$workDir/databases/mobDB"
+params.card_json = "$workDir/databases/cardDB"
+
+// Output for results
 params.outDir = "$projectDir/results"
 
 
@@ -21,27 +22,6 @@ log.info """\
 
 // Note: what happens if these files are not generated?, e.g., with
 // optional flag?
-
-
-process download_CARD_json {
-    label "RGI"
-
-    input: 
-
-    output:
-    stdout emit: stdout
-    path 'card.json', emit: json
-
-
-    script:
-    """
-    echo "Downloading CARD json"
-    wget https://card.mcmaster.ca/latest/data
-    tar -xvf data ./card.json
-    """
-
-}
-
 
 process load_RGI_database { 
     label "RGI"
@@ -90,26 +70,6 @@ process run_RGI {
     """
 }
 
-process download_MOB_database {
-    label "MOB"
-
-    input:
-
-    output: 
-    path "mobDB", type: 'dir'
-
-    script:
-    """ 
-    mob_init --database_directory "./mobDB"
-    """
-
-    stub:
-    """
-    echo Stub command
-    mkdir "./mobDB"
-    touch mobDB/status.txt
-    """
-}
 
 process run_mobSuite {
     label "MOB"
@@ -165,50 +125,24 @@ process merge_tables {
     """
 }
 
-
-
 workflow {
 
     // Get the Contigs into a channel
     CONTIGS = Channel
                 .fromPath(params.contigs)
                 .map { file -> tuple(file.baseName, file) }
-
-    // Download CARD database if specified on the command line.
-    if ( params.download_card_json ==~ '[Yy][Ee]{0,1}[Ss]{0,1}' ){
-   
-        JSON = download_CARD_json()
     
-    } else if ( params.download_card_json ==~ '[Nn][Oo]{0,1}' && 
-                file(params.card_json).exists() ) {
-
-        JSON = Channel.fromPath(params.card_json)
-
-    } else {
-        error "ERROR: CARD json file either not specified or not found"
-    }
-
+    // Get the CARD Json
+    JSON = Channel.fromPath(params.card_json)
     // Load RGI database locally.
     LOCAL_DB = load_RGI_database(JSON)
-
     // Run RGI
     RGI_RESULTS = run_RGI(CONTIGS, LOCAL_DB.out)
     RGI_RESULTS.table.view()
 
-    // Download MOB databases if asked on the command line.
-    if ( params.download_mobDB ==~ '[Yy][Ee]{0,1}[Ss]{0,1}' ){
-    
-        MOB_DB = download_MOB_database()
 
-    } else if ( params.download_mobDB ==~ '[Nn][Oo]{0,1}' &&
-                file(params.mobDB).exists() ){
-
-        MOB_DB = Channel.fromPath(params.mobDB)
-
-    } else {
-        error "ERROR: MOB-suite Database directory either not specified or not found"
-    }
-
+    // Get the MOB datbase path.     
+    MOB_DB = Channel.fromPath(params.mobDB)
     // Run mob_recon on the contigs using the database.
     MOB_RESULTS = run_mobSuite(CONTIGS, MOB_DB)
 
