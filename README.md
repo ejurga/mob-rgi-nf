@@ -65,7 +65,7 @@ pipeline.
 ```bash
 nextflow run download_databases.nf \
     --mobDB "/path/to/mobDB/directory" \
-    --card_json "/path/to/card/card.json"
+    --card_json "/path/to/card/directory"
 ```
 
 
