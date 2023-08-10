@@ -19,7 +19,7 @@ genetic elements from a given set of whole genome sequence data.
 ## Overview
 
 The nextflow script `download_databases.nf` is used to download the databases
-used by RGI and MOB-suite (if needed)./
+used by RGI and MOB-suite (if needed).
 
 The nextflow script `pipeline.nf` runs both tools on a provided set of
 sequences. Both RGI and MOB-suite output their results in the form of tabular
@@ -88,11 +88,9 @@ pipeline will handle downloading and initializing the containers. Therefore, the
 very first run will take some time as the proper containers are downloaded.
 
 ```bash
-
 nextflow run pipeline.nf \
     -profile [conda|docker] \
-    --contigs dir/to/sequences/*.fasta
-
+    --contigs "dir/to/sequences/*.fasta"
 ```
 
 This command assumes that the databases have first been downloaded into the
