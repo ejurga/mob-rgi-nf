@@ -3,7 +3,7 @@ params.contigs = ""
 
 // Database Locations
 params.mobDB = "$workDir/databases/mobDB"
-params.card_json = "$workDir/databases/cardDB"
+params.card_json = "$workDir/databases/card.json"
 
 // Output for results
 params.outDir = "$projectDir/results"
