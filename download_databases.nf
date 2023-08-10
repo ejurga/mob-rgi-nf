@@ -1,7 +1,7 @@
 // Parameters
 // Database Locations
 params.mobDB = "$workDir/databases/mobDB"
-params.card_json = "$workDir/databases/cardDB"
+params.card_json = "$workDir/databases"
 // Database download controls
 params.download_mobDB = "no"
 params.download_card_json = "no"
