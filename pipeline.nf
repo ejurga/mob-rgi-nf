@@ -24,7 +24,7 @@ log.info """\
 // optional flag?
 
 process load_RGI_database { 
-    label "RGI"
+    label "RGI" 
 
     input:
     path card_json
