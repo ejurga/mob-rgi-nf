@@ -100,7 +100,7 @@ process run_mobSuite {
     tuple val(sample), path("mobSuite/contig_report.txt"), 
       emit: contig_table
     tuple val(sample), path("mobSuite/plasmid*.fasta"), 
-      emit: plasmid_fastas
+      emit: plasmid_fastas, optional: true
     tuple val(sample), path("mobSuite/mobtyper_results.txt"), 
       emit: typer, optional: true
     tuple val(sample), path("mobSuite/mge.report.txt"), 
@@ -113,7 +113,8 @@ process run_mobSuite {
       --infile $contigs \
       --outdir mobSuite \
       --num_threads 1 \
-      --database_directory $params.mobDB
+      --database_directory $params.mobDB \
+      --force 
 
     """
     stub: 
