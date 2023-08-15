@@ -11,6 +11,9 @@ params.plasmids_only = "no"
 // Output for results
 params.outDir = "$projectDir/results"
 
+// Process parameters
+params.num_threads_per_task = 1
+
 
 // Log
 log.info """\
@@ -47,6 +50,7 @@ process load_RGI_database {
 process run_RGI { 
     label "RGI"
     publishDir "${params.outDir}/$sample/RGI"
+    cpus params.num_threads_per_task
 
     input:
     tuple val(sample), path(contigs)
@@ -61,6 +65,7 @@ process run_RGI {
     echo "plasmids only? $params.plasmids_only"
     rgi main \
         --local \
+        --num_threads ${task.cpus} \
         --input_sequence $contigs \
         --output_file "rgi_results"
 
@@ -92,6 +97,7 @@ process concatenate_plasmid_seqs {
 process run_mobSuite {
     label "MOB"
     publishDir "${params.outDir}/$sample"
+    cpus params.num_threads_per_task
 
     input: 
     tuple val(sample), path(contigs)
@@ -112,7 +118,7 @@ process run_mobSuite {
     mob_recon \
       --infile $contigs \
       --outdir mobSuite \
-      --num_threads 1 \
+      --num_threads ${task.cpus} \
       --database_directory $params.mobDB \
       --force 
 
