@@ -5,6 +5,9 @@ params.contigs = ""
 params.mobDB = "$workDir/databases/mobDB"
 params.card_json = "$workDir/databases/card.json"
 
+// Full RGI or on plasmids only?
+params.plasmids_only = "no"
+
 // Output for results
 params.outDir = "$projectDir/results"
 
@@ -55,7 +58,7 @@ process run_RGI {
 
     script: 
     """
-
+    echo "plasmids only? $params.plasmids_only"
     rgi main \
         --local \
         --input_sequence $contigs \
@@ -70,6 +73,21 @@ process run_RGI {
     """
 }
 
+process concatenate_plasmid_seqs {
+
+    input:
+    tuple val(sample), path(plasmid_contigs)
+
+    output:
+    tuple val(sample), path("*.fasta"), emit: contigs
+
+    script:
+    """
+    cat $plasmid_contigs > ${sample}.fasta
+
+    """
+}
+
 
 process run_mobSuite {
     label "MOB"
@@ -81,8 +99,8 @@ process run_mobSuite {
     output: 
     tuple val(sample), path("mobSuite/contig_report.txt"), 
       emit: contig_table
-    tuple val(sample), path("mobSuite/*.fasta"), 
-      emit: fastas
+    tuple val(sample), path("mobSuite/plasmid*.fasta"), 
+      emit: plasmid_fastas
     tuple val(sample), path("mobSuite/mobtyper_results.txt"), 
       emit: typer, optional: true
     tuple val(sample), path("mobSuite/mge.report.txt"), 
@@ -130,16 +148,28 @@ workflow {
     CONTIGS = Channel
                 .fromPath(params.contigs)
                 .map { file -> tuple(file.baseName, file) }
+
+    // Run mob_recon on the contigs.
+    MOB_RESULTS = run_mobSuite(CONTIGS)
     
     // Get the CARD Json
     JSON = Channel.fromPath(params.card_json)
     // Load RGI database locally.
     LOCAL_DB = load_RGI_database(JSON)
-    // Run RGI
-    RGI_RESULTS = run_RGI(CONTIGS, LOCAL_DB.out.collect())
 
-    // Run mob_recon on the contigs.
-    MOB_RESULTS = run_mobSuite(CONTIGS)
+    // Run RGI
+    // Does the user want to run RGI on plasmids only?
+    if ( params.plasmids_only ==~ '[Yy][Ee]{0,1}[Ss]{0,1}' ){
+        // Merge plasmid seqs into a single file
+        PLASMID_CONTIGS = concatenate_plasmid_seqs(MOB_RESULTS.plasmid_fastas)
+        // Run RGI on the plasmid contigs only
+        RGI_RESULTS = run_RGI(  PLASMID_CONTIGS.contigs,
+                                LOCAL_DB.out.collect()  )
+    } else { 
+        // Otherwise, just run RGI on the full sample set
+        RGI_RESULTS = run_RGI(CONTIGS, LOCAL_DB.out.collect())
+    }
+
 
     // Create channel with tables to be combined
     TABLES = RGI_RESULTS.table 
