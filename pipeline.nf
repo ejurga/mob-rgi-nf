@@ -6,7 +6,7 @@ params.mobDB = "$workDir/databases/mobDB"
 params.card_json = "$workDir/databases/card.json"
 
 // Full RGI or on plasmids only?
-params.plasmids_only = "no"
+params.plasmids_only = false
 
 // Output for results
 params.outDir = "$projectDir/results"
@@ -199,7 +199,7 @@ workflow {
 
     // Run RGI
     // Does the user want to run RGI on plasmids only?
-    if ( params.plasmids_only ==~ '[Yy][Ee]{0,1}[Ss]{0,1}' ){
+    if ( params.plasmids_only ){
         // Merge plasmid seqs into a single file
         PLASMID_CONTIGS = concatenate_plasmid_seqs(MOB_RESULTS.plasmid_fastas)
         // Run RGI on the plasmid contigs only
