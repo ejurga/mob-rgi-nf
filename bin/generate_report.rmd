@@ -1,0 +1,47 @@
+# Results of RGI-MOB-NF
+
+Here is the start of the report.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+
+library(tidyverse)
+library(knitr)
+df <- read_csv("results/All_samples.csv")
+glimpse(df)
+
+```
+
+Amount of AMR genes detected per sample. Results are shown for AMR genes found on the
+chromosome, and on plasmids. Perfect or Strict hits are categoties from RGI: perfect 
+hits are 100% identical, while strict hits are not identidy, but close (based on 
+curated cut off values).
+
+```{r, echo = FALSE}
+
+df$Cut_Off = factor(df$Cut_Off, levels=c("Perfect", "Strict"), ordered=TRUE)
+
+table <-
+  df %>%
+  group_by(Sample, molecule_type, Cut_Off) %>%
+  tally() %>%
+  pivot_wider(names_from = c(molecule_type, Cut_Off),
+              values_from = n, values_fill = 0,
+              names_glue = "{molecule_type}: {Cut_Off}",
+              names_expand = TRUE)
+
+kable(table)
+
+```
+
+Plasmids detected per sample, and the corresponding AMR genes for each.
+
+```{r}
+
+df %>% 
+  filter(molecule_type == "plasmid") %>% 
+  select(Sample, primary_cluster_id, Best_Hit_ARO, Model_type, )
+
+```
+
+
+
