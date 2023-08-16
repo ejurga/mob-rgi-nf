@@ -78,6 +78,8 @@ to overwrite the existing databases if needed.
 
 ### Detect AMR determinants and plasmids
 
+#### Basic Usage
+
 Use the script `pipeline.nf` to run mobSuite and RGI. The input should be
 assembled contigs. Use a bash glob to designate multiple sequences to be run by
 the pipeline. Note that the file names will be used to designate sample ID.
@@ -102,6 +104,18 @@ path to the card.json file
 The results will be collected in the directory `results` in the project
 directory by default. This can be changed with the option `--outDir`.
 
+#### Detecting only AMR on plasmids
+
+By default, MOB-RGI-NF will run RGI on all the contigs in a provided fasta file.
+This means it will detect AMR determinants present on the chromosome, as well as
+those on plasmids. Since RGI and MOB-suite can be run separately, the pipeline
+will use both tools in parallel, and merge the results at the end. If you are
+only interested in AMR determinants on plasmids, the option `--plasmids_only`
+can be supplied. This will run RGI only on contigs determined by MOB-suite to be
+from plasmids, and will significantly decrease the time it takes to run RGI.
+However, it means that RGI cannot be run parallel to MOB-suite, and so the
+actual time to completion of the pipeline may not actually be shorter, unless
+many samples are being processed at the same time.
 
 ## Visuals
 Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
