@@ -14,16 +14,49 @@ params.outDir = "$projectDir/results"
 // Process parameters
 params.num_threads_per_task = 1
 
+// Help
+params.help = false
+
+def helpMessage() { 
+
+    log.info """
+        Usage: 
+        nextflow run pipeline.nf \\
+            -profile [conda|docker] \\
+            --contigs "path/to/contigs/*.fasta"
+
+        Options:
+          --contigs         PATH to contigs to run the pipeline on. Multiple 
+                            files can be specified using bash globs.
+          --mobDB           PATH to the DIRECTORY of the MOB-suite databases
+          --card_json       PATH to CARD's card.json file.
+          --plasmids_only   Run RGI only on contigs identified as plasmids, thus
+                            ignoring any chromosomal AMR determinants.
+          --outDir          DIRECTORY to link results to.
+          --num_threads     Number of threads to use in downstream processes, 
+                            per sample. 
+    
+    """.stripIndent(true)
+}
+
+if (params.help) { 
+    helpMessage() 
+    exit 0
+}
+
 
 // Log
 log.info """\
-   Mob-Suite RGI pipeline
-   ===================================
-   contigs     : ${params.contigs}
-   mobDB       : ${params.mobDB}
-   Profile     : ${workflow.profile}
-   outDir      : ${params.outDir}
-   """
+    Mob-Suite RGI pipeline
+    ===================================
+    Profile     : ${workflow.profile}
+    Contigs     : ${params.contigs}
+    mobDB       : ${params.mobDB}
+    card.json   : ${params.card_json}
+    outDir      : ${params.outDir} 
+
+    PlasmidsOnly? ${params.plasmids_only}
+    """
    .stripIndent(true)
 
 // Note: what happens if these files are not generated?, e.g., with
