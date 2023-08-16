@@ -12,7 +12,7 @@ params.plasmids_only = "no"
 params.outDir = "$projectDir/results"
 
 // Process parameters
-params.num_threads_per_task = 1
+params.num_threads = 1
 
 // Help
 params.help = false
@@ -83,7 +83,7 @@ process load_RGI_database {
 process run_RGI { 
     label "RGI"
     publishDir "${params.outDir}/$sample/RGI"
-    cpus params.num_threads_per_task
+    cpus params.num_threads
 
     input:
     tuple val(sample), path(contigs)
@@ -130,7 +130,7 @@ process concatenate_plasmid_seqs {
 process run_mobSuite {
     label "MOB"
     publishDir "${params.outDir}/$sample"
-    cpus params.num_threads_per_task
+    cpus params.num_threads
 
     input: 
     tuple val(sample), path(contigs)
