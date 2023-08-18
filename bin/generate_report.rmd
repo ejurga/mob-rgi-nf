@@ -3,11 +3,9 @@
 Here is the start of the report.
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
-
 library(tidyverse)
 library(knitr)
 df <- read_csv("results/All_samples.csv")
-glimpse(df)
 
 ```
 
@@ -33,15 +31,80 @@ kable(table)
 
 ```
 
-Plasmids detected per sample, and the corresponding AMR genes for each.
+Number of plasmids detected per sample. 
 
-```{r}
+```{r, echo=FALSE}
 
-df %>% 
-  filter(molecule_type == "plasmid") %>% 
-  select(Sample, primary_cluster_id, Best_Hit_ARO, Model_type, )
+plasmids_df <-
+  df %>%
+  filter(molecule_type == "plasmid")
+
+table <-
+  plasmids_df %>%
+  select(Sample, primary_cluster_id) %>%
+  unique() %>%
+  group_by(Sample) %>%
+  tally()
+
+kable(table)
 
 ```
 
+## Plasmid details:
 
+```{r, echo=FALSE, results='asis'}
+
+# Which samples have plasmids?
+samples_w_plasmids <- unique(plasmids_df$Sample)
+
+# For each sample, print out the tables of the plasmid details, and the
+# AMR genes found on each plasmid
+for (sample in samples_w_plasmids){
+
+  # Print out the current sample in the report
+  cat("### Sample:", sample, "  \n", sep = " ")
+
+  # Get curent sample
+  sample_df <- plasmids_df %>% filter(Sample == sample)
+  # Get the plasmids of the current sample
+  plasmids <- unique(sample_df$primary_cluster_id)
+
+  # Print out the tables
+  for (plasmid in plasmids) {
+
+    # Print out the current plasmid
+    cat("Plasmid:", plasmid, "  \n", sep = " ")
+    # Get the dataframe pertaining to the current plasmid
+    plasmid_df <- sample_df %>% filter(primary_cluster_id  == plasmid)
+
+    # Get the MOB-suite details of the current plasmid
+    plasmid_info_table <-
+      plasmid_df %>%
+      select(primary_cluster_id,
+             secondary_cluster_id,
+             size,
+             `rep_type(s)`,
+             `relaxase_type(s)`,
+             `orit_type(s)`,
+             predicted_mobility) %>%
+      unique()
+
+    # Get the AMR genes of the current plasmid.
+    plasmid_AMR_gene_table <-
+      plasmid_df %>%
+      select(Best_Hit_ARO,
+             Cut_Off,
+             Model_type,
+             `Drug Class`,
+             `Resistance Mechanism`,
+             `AMR Gene Family`)
+
+    # Create the tables to be formatted into the report.
+    # Explicetely call print to work in for loops.
+    print(kable(plasmid_info_table))
+    print(kable(plasmid_AMR_gene_table))
+
+  }
+}
+```
 
