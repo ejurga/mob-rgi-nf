@@ -182,6 +182,32 @@ process merge_tables {
     """
 }
 
+process create_report {
+    label "RGI"
+    publishDir "${params.outDir}"
+    cache false
+
+    input: 
+    path(table)
+
+    output: 
+    path('report.html'), emit: out
+
+    script: 
+    """
+    #!/usr/bin/env Rscript 
+
+    rmarkdown::render(
+        input = "${projectDir}/bin/generate_report.rmd",
+        params = list(data = "${table}"),
+        output_file = "report.html",
+        knit_root_dir = getwd(),
+        output_dir = getwd()
+        )
+
+    """
+}
+
 workflow {
 
     // Get the Contigs into a channel
@@ -227,7 +253,7 @@ workflow {
                              name: 'All_samples.csv', 
                              storeDir: params.outDir )
 
-    // Run report
-    CAT_TAB.view()
+    // Create report
+    create_report(CAT_TAB)
  }
 
