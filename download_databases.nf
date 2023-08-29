@@ -44,7 +44,6 @@ process download_CARD_json {
     stdout emit: stdout
     path 'card.json', emit: json
 
-
     script:
     """
     echo "Downloading CARD json"
@@ -71,7 +70,6 @@ process download_MOB_database {
     """ 
     mob_init --database_directory '.'
     """
-
     stub:
     """
     touch status.txt
