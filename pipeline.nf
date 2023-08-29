@@ -204,7 +204,6 @@ process create_report {
         knit_root_dir = getwd(),
         output_dir = getwd()
         )
-
     """
 }
 
@@ -235,7 +234,6 @@ workflow {
         // Otherwise, just run RGI on the full sample set
         RGI_RESULTS = run_RGI(CONTIGS, LOCAL_DB.out.collect())
     }
-
 
     // Create channel with tables to be combined
     TABLES = RGI_RESULTS.table 
