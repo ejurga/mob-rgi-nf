@@ -1,11 +1,14 @@
-# Results of RGI-MOB-NF
-
-Here is the start of the report.
+---
+title: "AMR determinants and plasmids generated from pipeline"
+output: html_document
+params: 
+  data: ""
+---
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
 library(tidyverse)
 library(knitr)
-df <- read_csv("results/All_samples.csv")
+df <- read_csv(params$data)
 
 ```
 
