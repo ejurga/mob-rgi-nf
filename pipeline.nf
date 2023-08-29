@@ -182,6 +182,31 @@ process merge_tables {
     """
 }
 
+process create_report {
+    label "RGI"
+    publishDir "${params.outDir}"
+    cache false
+
+    input: 
+    path(table)
+
+    output: 
+    path('report.html'), emit: out
+
+    script: 
+    """
+    #!/usr/bin/env Rscript 
+
+    rmarkdown::render(
+        input = "${projectDir}/bin/generate_report.rmd",
+        params = list(data = "${table}"),
+        output_file = "report.html",
+        knit_root_dir = getwd(),
+        output_dir = getwd()
+        )
+    """
+}
+
 workflow {
 
     // Get the Contigs into a channel
@@ -210,7 +235,6 @@ workflow {
         RGI_RESULTS = run_RGI(CONTIGS, LOCAL_DB.out.collect())
     }
 
-
     // Create channel with tables to be combined
     TABLES = RGI_RESULTS.table 
                 .concat(MOB_RESULTS.contig_table)
@@ -221,11 +245,13 @@ workflow {
 
     // This operation concatenates the CSV files, but leaves just one header at 
     // the top 
-    MERGE_TAB.out
-      .collectFile(
-         keepHeader: true, 
-         skip: 1, 
-         name: 'All_samples.csv', 
-         storeDir: params.outDir )
+    CAT_TAB = MERGE_TAB.out
+                .collectFile(keepHeader: true, 
+                             skip: 1, 
+                             name: 'All_samples.csv', 
+                             storeDir: params.outDir )
+
+    // Create report
+    create_report(CAT_TAB)
  }
 
