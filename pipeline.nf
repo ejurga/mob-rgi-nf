@@ -221,11 +221,13 @@ workflow {
 
     // This operation concatenates the CSV files, but leaves just one header at 
     // the top 
-    MERGE_TAB.out
-      .collectFile(
-         keepHeader: true, 
-         skip: 1, 
-         name: 'All_samples.csv', 
-         storeDir: params.outDir )
+    CAT_TAB = MERGE_TAB.out
+                .collectFile(keepHeader: true, 
+                             skip: 1, 
+                             name: 'All_samples.csv', 
+                             storeDir: params.outDir )
+
+    // Run report
+    CAT_TAB.view()
  }
 
