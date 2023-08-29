@@ -2,33 +2,36 @@
 // Database Locations
 params.mobDB = "$workDir/databases/mobDB"
 params.card_json = "$workDir/databases"
+
 // Database download controls
-params.download_mobDB = "no"
-params.download_card_json = "no"
-params.overwrite = "no"
+params.download_mobDB = false
+params.download_card_json = false
+params.download_all = false
+params.overwrite = false
 
-// Log
-log.info """\
+// Set a flag to donwload the mob database based on input paramters
+if ( params.download_all | params.download_mobDB ){
+    DL_mob = true 
+} else { 
+    DL_mob = false
+}
 
+// Set a flag to donwload the card json based on input paramters
+if ( params.download_all | params.download_card_json ){
+    DL_card = true 
+} else { 
+    DL_card = false
+}
 
-    Database download pipeline
-    ===================================
+// Log message
+log.info """ 
 
-    MOB-suite database: 
+    Download Databases
     -------------------
-    Download?:      ${params.download_mobDB}
-    Path to dir:    ${params.mobDB}
-    
-    CARD json
-    ---------
-    Download?:      ${params.download_card_json}
-    Path to file:   ${params.card_json}
+    MOB-suite databases: ${DL_mob}
+    CARD json: ${DL_card}
 
-    OVERWRITE:      ${params.overwrite}
-
-
-    """
-    .stripIndent(true)
+""".stripIndent(true)
 
 
 process download_CARD_json {
@@ -40,7 +43,6 @@ process download_CARD_json {
     output:
     stdout emit: stdout
     path 'card.json', emit: json
-
 
     script:
     """
@@ -68,7 +70,6 @@ process download_MOB_database {
     """ 
     mob_init --database_directory '.'
     """
-
     stub:
     """
     touch status.txt
@@ -85,7 +86,7 @@ workflow download_CARD_WF {
     } else {
         // Has overwrite flag been set?
         // If YES: download it
-        if ( params.overwrite ==~ '[Yy][Ee]{0,1}[Ss]{0,1}' ){
+        if ( params.overwrite ){
             println "WARNING: file at $params.card_json detected, overwriting!"
             download_CARD_json()
         // But if NO: skip
@@ -115,7 +116,7 @@ workflow download_MOB_WF {
         } else { 
             // Has overwrite flag been set?
             // If YES: download it
-            if ( params.overwrite ==~ '[Yy][Ee]{0,1}[Ss]{0,1}' ){
+            if ( params.overwrite ){
                 println (
                     "WARNING: Contents of $params.mobDB detected, " +
                     "overwriting!")
@@ -133,11 +134,11 @@ workflow download_MOB_WF {
 workflow {
 
     // Has user specified that the CARD database be downloaded?
-    if ( params.download_card_json ==~ '[Yy][Ee]{0,1}[Ss]{0,1}' ){
+    if ( DL_card ){
         download_CARD_WF()
     }
-
-    if ( params.download_mobDB ==~ '[Yy][Ee]{0,1}[Ss]{0,1}' ){
+    // Has use specifed that the MOB database be downloaded?
+    if ( DL_mob ){
         download_MOB_WF()
     }
 

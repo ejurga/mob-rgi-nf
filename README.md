@@ -48,10 +48,14 @@ Clone this pipeline into a working directory.
 
 Both MOB-suite and RGI require databases to be downloaded in order to run the
 tools. MOB-RGI-NF provides a pipeline to download the databases if the user does
-not already have them. 
+not already have them. You may specify `--download_mobDB` to download the
+MOB-suite databases, `--download_card_json` to download the CARD json file, or
+`--download_all` to download both.
 
 ```bash
-nextflow run download_databases.nf
+nextflow run download_databases.nf \
+    -profile [conda|docker] \
+    --download_all
 ```
 
 By default, this command will download both databases into a `databases` folder
@@ -64,15 +68,13 @@ pipeline.
 
 ```bash
 nextflow run download_databases.nf \
+    -profile [conda|docker] \
+    --download_all \
     --mobDB "/path/to/mobDB/directory" \
     --card_json "/path/to/card/directory"
 ```
 
-
-By default, both databases are downloaded. However, in the event that only one
-database needs to be installed, the options `--download_mobDB` or
-`--download_card_json` can be set to `no` to prevent the download of their
-respective database. By default, MOB-RGI-NF will not overwrite the databases if
+By default, MOB-RGI-NF will not overwrite the databases if
 it detects that they are already installed at the given path; set `--overwrite`
 to overwrite the existing databases if needed.
 
