@@ -9,7 +9,7 @@ params.card_json = "$workDir/databases/card.json"
 params.plasmids_only = false
 
 // Output for results
-params.outDir = "$projectDir/results"
+params.outDir = "$launchDir/results"
 
 // Process parameters
 params.num_threads = 1
