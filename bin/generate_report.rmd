@@ -19,7 +19,9 @@ curated cut off values).
 
 ```{r, echo = FALSE}
 
-df$Cut_Off = factor(df$Cut_Off, levels=c("Perfect", "Strict"), ordered=TRUE)
+df$Cut_Off <- factor(df$Cut_Off,
+                     levels = c("Perfect", "Strict"),
+                     ordered = TRUE)
 
 table <-
   df %>%
