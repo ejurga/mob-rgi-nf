@@ -84,7 +84,7 @@ to overwrite the existing databases if needed.
 
 Use the script `pipeline.nf` to run mobSuite and RGI. The input should be
 assembled contigs. Use a bash glob to designate multiple sequences to be run by
-the pipeline. Note that the file names will be used to designate sample ID.
+the pipeline. Note that the:wq file names will be used to designate sample ID.
 
 Make sure to select a run profile, depending on the container
 you want to use. Currently conda (using mamba) and docker are supported. The
